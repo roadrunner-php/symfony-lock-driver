@@ -1,5 +1,5 @@
 {
-  "name": "spiral/symfony-lock-driver",
+  "name": "roadrunner-php/symfony-lock-driver",
   "type": "library",
   "description": "RoadRunner: HTTP and PSR-7 worker",
   "license": "MIT",
