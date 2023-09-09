@@ -1,7 +1,7 @@
 {
   "name": "roadrunner-php/symfony-lock-driver",
   "type": "library",
-  "description": "RoadRunner: HTTP and PSR-7 worker",
+  "description": "RoadRunner: symfony/lock bridge",
   "license": "MIT",
   "authors": [
     {
