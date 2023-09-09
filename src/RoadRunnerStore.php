@@ -37,7 +37,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface
 
     public function delete(Key $key): void
     {
-        $this->rrLock->forceRelease((string) $key);
+        $this->rrLock->release((string) $key, $this->processId);
     }
 
     public function saveRead(Key $key): void

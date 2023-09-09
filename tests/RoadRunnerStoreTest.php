@@ -45,8 +45,8 @@ final class RoadRunnerStoreTest extends TestCase
     {
         $rrLock = $this->createMock(RrLock::class);
         $rrLock->expects(self::once())
-            ->method('forceRelease')
-            ->with('resource-name');
+            ->method('release')
+            ->with('resource-name', '*');
         $store = new RoadRunnerStore($rrLock);
         $store->delete(new Key('resource-name'));
     }
