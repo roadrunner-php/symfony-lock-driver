@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Spiral\RoadRunner\Symfony\Lock;
 
-use RoadRunner\Lock\LockInterface as RrLockInterface;
+use RoadRunner\Lock as RR;
 use Spiral\Goridge\RPC\Exception\RPCException;
 use Symfony\Component\Lock\Exception\LockAcquiringException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
@@ -14,10 +14,15 @@ use Symfony\Component\Lock\SharedLockStoreInterface;
 
 final class RoadRunnerStore implements SharedLockStoreInterface
 {
+    /**
+     * @param RR\LockInterface $rrLock
+     * @param float $initialTtl The time-to-live of the lock, in seconds. Defaults to 0 (forever).
+     * @param float $initialWaitTtl How long to wait to acquire lock until returning false.
+     */
     public function __construct(
-        private readonly RrLockInterface $rrLock,
-        private float $initialTtl = 300.0,
-        private float $initialWaitTtl = 0,
+        private readonly RR\LockInterface $rrLock,
+        private readonly float           $initialTtl = 300.0,
+        private readonly float           $initialWaitTtl = 0,
     ) {
     }
 
