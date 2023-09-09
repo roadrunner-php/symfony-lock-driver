@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Spiral\RoadRunner\Symfony\Lock\Tests;
 
 use PHPUnit\Framework\TestCase;
-use RoadRunner\Lock\LockInterface as RrLock;
+use RoadRunner\Lock as RR;
 use Spiral\RoadRunner\Symfony\Lock\RoadRunnerStore;
 use Symfony\Component\Lock\LockFactory;
 
@@ -20,7 +20,7 @@ final class IntegrationTest extends TestCase
                 'uuid2'
             ],
         ];
-        $rrLock = $this->createMock(RrLock::class);
+        $rrLock = $this->createMock(RR\LockInterface::class);
         $rrLock
             ->expects(self::exactly(3))
             ->method('lock')
