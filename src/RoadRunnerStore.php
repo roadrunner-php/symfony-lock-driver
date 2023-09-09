@@ -16,17 +16,18 @@ final class RoadRunnerStore implements SharedLockStoreInterface
 {
     public function __construct(
         private readonly RrLockInterface $rrLock,
-        private readonly string          $processId
     ) {
     }
 
     public function save(Key $key): void
     {
+        \assert(false === $key->hasState(__CLASS__));
         try {
-            $lockId = $this->rrLock->lock((string)$key);
+            $lockId = $this->rrLock->lock((string) $key);
             if (false === $lockId) {
                 throw new LockConflictedException('RoadRunner. Failed to make lock');
             }
+            $key->setState(__CLASS__, $lockId);
         } catch (RPCException $e) {
             throw new LockAcquiringException(message: 'RoadRunner. RPC call error', previous: $e);
         }
@@ -34,26 +35,32 @@ final class RoadRunnerStore implements SharedLockStoreInterface
 
     public function saveRead(Key $key): void
     {
-        if (false === $this->rrLock->lockRead((string)$key)) {
+        \assert(false === $key->hasState(__CLASS__));
+        $lockId = $this->rrLock->lockRead((string)$key);
+        if (false === $lockId) {
             throw new LockConflictedException('RoadRunner. Failed to make read lock');
         }
+        $key->setState(__CLASS__, $lockId);
     }
 
     public function exists(Key $key): bool
     {
-        return $this->rrLock->exists((string)$key, $this->processId);
+        \assert($key->hasState(__CLASS__));
+        return $this->rrLock->exists((string) $key, $key->getState(__CLASS__));
     }
 
     public function putOffExpiration(Key $key, float $ttl): void
     {
-        if (false === $this->rrLock->updateTTL((string)$key, $this->processId, $ttl)) {
+        \assert($key->hasState(__CLASS__));
+        if (false === $this->rrLock->updateTTL((string) $key, $key->getState(__CLASS__), $ttl)) {
             throw new LockConflictedException('RoadRunner. Failed to update lock ttl');
         }
     }
 
     public function delete(Key $key): void
     {
-        if (false === $this->rrLock->release((string)$key, $this->processId)) {
+        \assert($key->hasState(__CLASS__));
+        if (false === $this->rrLock->release((string) $key, $key->getState(__CLASS__))) {
             throw new LockReleasingException('RoadRunner. Failed to release lock');
         }
     }

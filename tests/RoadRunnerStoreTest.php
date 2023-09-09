@@ -7,7 +7,6 @@ namespace Spiral\RoadRunner\Symfony\Lock\Tests;
 use PHPUnit\Framework\TestCase;
 use RoadRunner\Lock\LockInterface as RrLock;
 use Spiral\RoadRunner\Symfony\Lock\RoadRunnerStore;
-
 use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Exception\LockReleasingException;
 use Symfony\Component\Lock\Key;
@@ -21,8 +20,11 @@ final class RoadRunnerStoreTest extends TestCase
             ->method('lock')
             ->with('resource-name', null)
             ->willReturn('lock-id');
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        $store->save(new Key('resource-name'));
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $store->save($key);
+        self::assertTrue($key->hasState(RoadRunnerStore::class));
+        self::assertSame('lock-id', $key->getState(RoadRunnerStore::class));
     }
 
     public function testSaveReadSuccess(): void
@@ -32,8 +34,9 @@ final class RoadRunnerStoreTest extends TestCase
             ->method('lockRead')
             ->with('resource-name', null)
             ->willReturn('lock-id');
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        $store->saveRead(new Key('resource-name'));
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $store->saveRead($key);
     }
 
     public function testExistsSuccess(): void
@@ -41,10 +44,12 @@ final class RoadRunnerStoreTest extends TestCase
         $rrLock = $this->createMock(RrLock::class);
         $rrLock->expects(self::once())
             ->method('exists')
-            ->with('resource-name', 'pid')
+            ->with('resource-name')
             ->willReturn(true);
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        $store->exists(new Key('resource-name'));
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $key->setState(RoadRunnerStore::class, 'lock-id');
+        $store->exists($key);
     }
 
     public function testPutOffExpirationSuccess(): void
@@ -52,10 +57,12 @@ final class RoadRunnerStoreTest extends TestCase
         $rrLock = $this->createMock(RrLock::class);
         $rrLock->expects(self::once())
             ->method('updateTTL')
-            ->with('resource-name', 'pid', 3600.0)
+            ->with('resource-name', 'lock-id', 3600.0)
             ->willReturn(true);
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        $store->putOffExpiration(new Key('resource-name'), 3600.0);
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $key->setState(RoadRunnerStore::class, 'lock-id');
+        $store->putOffExpiration($key, 3600.0);
     }
 
     public function testDeleteSuccess(): void
@@ -63,10 +70,12 @@ final class RoadRunnerStoreTest extends TestCase
         $rrLock = $this->createMock(RrLock::class);
         $rrLock->expects(self::once())
             ->method('release')
-            ->with('resource-name', 'pid')
+            ->with('resource-name')
             ->willReturn(true);
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        $store->delete(new Key('resource-name'));
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $key->setState(RoadRunnerStore::class, 'lock-id');
+        $store->delete($key);
     }
 
     public function testSaveFail(): void
@@ -79,7 +88,7 @@ final class RoadRunnerStoreTest extends TestCase
             ->method('lock')
             ->with('resource-name', null)
             ->willReturn(false);
-        $store = new RoadRunnerStore($rrLock, 'pid');
+        $store = new RoadRunnerStore($rrLock);
         $store->save(new Key('resource-name'));
     }
 
@@ -92,8 +101,9 @@ final class RoadRunnerStoreTest extends TestCase
         $rrLock->expects(self::once())
             ->method('lockRead')
             ->with('resource-name', null);
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        $store->saveRead(new Key('resource-name'));
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $store->saveRead($key);
     }
 
     public function testExistsFail(): void
@@ -101,12 +111,12 @@ final class RoadRunnerStoreTest extends TestCase
         $rrLock = $this->createMock(RrLock::class);
         $rrLock->expects(self::once())
             ->method('exists')
-            ->with('resource-name', 'pid')
+            ->with('resource-name')
             ->willReturn(false);
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        self::assertFalse(
-            $store->exists(new Key('resource-name'))
-        );
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $key->setState(RoadRunnerStore::class, 'lock-id');
+        self::assertFalse($store->exists($key));
     }
 
     public function testPutOffExpirationFail(): void
@@ -117,10 +127,12 @@ final class RoadRunnerStoreTest extends TestCase
         $rrLock = $this->createMock(RrLock::class);
         $rrLock->expects(self::once())
             ->method('updateTTL')
-            ->with('resource-name', 'pid', 3600.0)
+            ->with('resource-name', 'lock-id', 3600.0)
             ->willReturn(false);
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        $store->putOffExpiration(new Key('resource-name'), 3600.0);
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $key->setState(RoadRunnerStore::class, 'lock-id');
+        $store->putOffExpiration($key, 3600.0);
     }
 
     public function testDeleteFail(): void
@@ -131,9 +143,11 @@ final class RoadRunnerStoreTest extends TestCase
         $rrLock = $this->createMock(RrLock::class);
         $rrLock->expects(self::once())
             ->method('release')
-            ->with('resource-name', 'pid')
+            ->with('resource-name')
             ->willReturn(false);
-        $store = new RoadRunnerStore($rrLock, 'pid');
-        $store->delete(new Key('resource-name'));
+        $store = new RoadRunnerStore($rrLock);
+        $key = new Key('resource-name');
+        $key->setState(RoadRunnerStore::class, 'lock-id');
+        $store->delete($key);
     }
 }
