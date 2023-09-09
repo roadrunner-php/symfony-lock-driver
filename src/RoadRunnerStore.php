@@ -16,6 +16,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface
 {
     public function __construct(
         private readonly RrLockInterface $rrLock,
+        private float $initialTtl = 300.0,
     ) {
     }
 
@@ -23,7 +24,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface
     {
         \assert(false === $key->hasState(__CLASS__));
         try {
-            $lockId = $this->rrLock->lock((string) $key);
+            $lockId = $this->rrLock->lock((string) $key, null, $this->initialTtl);
             if (false === $lockId) {
                 throw new LockConflictedException('RoadRunner. Failed to make lock');
             }
@@ -36,7 +37,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface
     public function saveRead(Key $key): void
     {
         \assert(false === $key->hasState(__CLASS__));
-        $lockId = $this->rrLock->lockRead((string)$key);
+        $lockId = $this->rrLock->lockRead((string)$key, null, $this->initialTtl);
         if (false === $lockId) {
             throw new LockConflictedException('RoadRunner. Failed to make read lock');
         }
