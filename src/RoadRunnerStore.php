@@ -24,6 +24,8 @@ final class RoadRunnerStore implements SharedLockStoreInterface
         private readonly float           $initialTtl = 300.0,
         private readonly float           $initialWaitTtl = 0,
     ) {
+        \assert($this->initialTtl >= 0);
+        \assert($this->initialWaitTtl >= 0);
     }
 
     public function save(Key $key): void
