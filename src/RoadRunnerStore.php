@@ -61,6 +61,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface
     public function putOffExpiration(Key $key, float $ttl): void
     {
         \assert($key->hasState(__CLASS__));
+        \assert($ttl > 0);
         if (false === $this->rrLock->updateTTL((string) $key, $key->getState(__CLASS__), $ttl)) {
             throw new LockConflictedException('RoadRunner. Failed to update lock ttl');
         }
