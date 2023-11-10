@@ -1,21 +1,11 @@
-# IDEA
-.idea/
-*.iml
-
-# Composer
-composer.phar
-vendor
-composer.lock
-
-# OS
-.DS_Store
-Thumbs.db
-*.exe
-
-# Other
-.phpunit.result.cache
+.idea
+.php_cs
 .php_cs.cache
-clover.xml
-.env
-builds
-
+.phpunit.result.cache
+build
+composer.lock
+coverage
+docs
+vendor
+node_modules
+.php-cs-fixer.cache
