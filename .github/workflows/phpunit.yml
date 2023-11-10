@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - master
+      - 1.*
 
 name: phpunit
 
