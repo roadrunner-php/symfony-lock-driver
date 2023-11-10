@@ -109,10 +109,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
 
         /** @var non-empty-string $resource */
         $resource = (string)$key;
-
-        if (false === $this->lock->release($resource, $lockId)) {
-            throw new LockReleasingException('RoadRunner. Failed to release lock');
-        }
+        $this->lock->release($resource, $lockId);
     }
 
     public function waitAndSave(Key $key): void

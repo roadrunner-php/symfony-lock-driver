@@ -9,7 +9,6 @@ use RoadRunner\Lock\LockInterface as RrLock;
 use Spiral\RoadRunner\Symfony\Lock\RoadRunnerStore;
 use Spiral\RoadRunner\Symfony\Lock\TokenGeneratorInterface;
 use Symfony\Component\Lock\Exception\LockConflictedException;
-use Symfony\Component\Lock\Exception\LockReleasingException;
 use Symfony\Component\Lock\Key;
 
 final class RoadRunnerStoreTest extends TestCase
@@ -152,9 +151,6 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testDeleteFail(): void
     {
-        $this->expectException(LockReleasingException::class);
-        $this->expectExceptionMessage('RoadRunner. Failed to release lock');
-
         $this->rrLock->expects(self::once())
             ->method('release')
             ->with('resource-name')
