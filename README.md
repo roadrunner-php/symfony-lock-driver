@@ -4,7 +4,7 @@
 [![Latest Stable Version](https://poser.pugx.org/roadrunner-php/symfony-lock-driver/v/stable)](https://packagist.org/packages/roadrunner-php/symfony-lock-driver)
 [![phpunit](https://github.com/roadrunner-php/symfony-lock-driver/actions/workflows/phpunit.yml/badge.svg)](https://github.com/roadrunner-php/symfony-lock-driver/actions)
 [![psalm](https://github.com/roadrunner-php/symfony-lock-driver/actions/workflows/psalm.yml/badge.svg)](https://github.com/roadrunner-php/symfony-lock-driver/actions)
-[![Codecov](https://codecov.io/gh/roadrunner-php/symfony-lock-driver/branch/master/graph/badge.svg)](https://codecov.io/gh/roadrunner-php/symfony-lock-driver/)
+[![Codecov](https://codecov.io/gh/roadrunner-php/symfony-lock-driver/branch/1.x/graph/badge.svg)](https://codecov.io/gh/roadrunner-php/symfony-lock-driver/)
 [![Total Downloads](https://poser.pugx.org/roadrunner-php/symfony-lock-driver/downloads)](https://packagist.org/roadrunner-php/symfony-lock-driver/phpunit)
 <a href="https://discord.gg/8bZsjYhVVk"><img src="https://img.shields.io/badge/discord-chat-magenta.svg"></a>
 
