@@ -9,7 +9,6 @@ use Spiral\Goridge\RPC\Exception\RPCException;
 use Symfony\Component\Lock\BlockingStoreInterface;
 use Symfony\Component\Lock\Exception\LockAcquiringException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
-use Symfony\Component\Lock\Exception\LockReleasingException;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\SharedLockStoreInterface;
 use Symfony\Component\Lock\Store\ExpiringStoreTrait;
@@ -122,8 +121,8 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         $status = $this->lock->lock($resource, $lockId, $this->initialTtl, $this->initialWaitTtl);
 
         $key->setState(__CLASS__, $lockId);
-        if (!$status) {
-            throw new LockConflictedException();
+        if ($status === false) {
+            throw new LockConflictedException('RoadRunner. Failed to make lock');
         }
 
         $this->checkNotExpired($key);

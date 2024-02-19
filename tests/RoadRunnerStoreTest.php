@@ -161,4 +161,33 @@ final class RoadRunnerStoreTest extends TestCase
         $key->setState(RoadRunnerStore::class, 'lock-id');
         $store->delete($key);
     }
+
+    public function testWaitAndSaveSuccess(): void
+    {
+        $this->rrLock->expects($this->once())
+            ->method('lock')
+            ->with('resource-name', 'random-id', 300, 60)
+            ->willReturn('lock-id');
+
+        $store = new RoadRunnerStore($this->rrLock, $this->tokens);
+        $key = new Key('resource-name');
+        $store->waitAndSave($key);
+
+        $this->assertTrue($key->hasState(RoadRunnerStore::class));
+        $this->assertSame('random-id', $key->getState(RoadRunnerStore::class));
+    }
+
+    public function testWaitAndSaveFail(): void
+    {
+        $this->expectException(LockConflictedException::class);
+        $this->expectExceptionMessage('RoadRunner. Failed to make lock');
+
+        $this->rrLock->expects($this->once())
+            ->method('lock')
+            ->with('resource-name', 'random-id', 300, 60)
+            ->willReturn(false);
+
+        $store = new RoadRunnerStore($this->rrLock, $this->tokens);
+        $store->waitAndSave(new Key('resource-name'));
+    }
 }
