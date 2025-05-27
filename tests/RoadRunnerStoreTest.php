@@ -166,7 +166,7 @@ final class RoadRunnerStoreTest extends TestCase
     {
         $this->rrLock->expects($this->once())
             ->method('lock')
-            ->with('resource-name', 'random-id', 300, 60)
+            ->with('resource-name', 'random-id', 300, 0)
             ->willReturn('lock-id');
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
@@ -184,7 +184,7 @@ final class RoadRunnerStoreTest extends TestCase
 
         $this->rrLock->expects($this->once())
             ->method('lock')
-            ->with('resource-name', 'random-id', 300, 60)
+            ->with('resource-name', 'random-id', 300, 0)
             ->willReturn(false);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);

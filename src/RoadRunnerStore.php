@@ -25,15 +25,15 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         private readonly RR\LockInterface $lock,
         private readonly TokenGeneratorInterface $tokens = new RandomTokenGenerator(),
         private readonly float $initialTtl = 300.0,
-        private readonly float $initialWaitTtl = 60,
+        private readonly float $initialWaitTtl = 0,
     ) {
         \assert($this->initialTtl >= 0);
         \assert($this->initialWaitTtl >= 0);
     }
 
-    public function withTtl(float $ttl): self
+    public function withTtl(float $ttl, float $waitTtl = 0): self
     {
-        return new self($this->lock, $this->tokens, $ttl, $this->initialWaitTtl);
+        return new self($this->lock, $this->tokens, $ttl, $waitTtl);
     }
 
     public function save(Key $key): void
@@ -46,7 +46,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
             /** @var non-empty-string $resource */
             $resource = (string)$key;
 
-            $status = $this->lock->lock($resource, $lockId, $this->initialTtl);
+            $status = $this->lock->lock($resource, $lockId, $this->initialTtl, $this->initialWaitTtl);
 
             if (false === $status) {
                 throw new LockConflictedException('RoadRunner. Failed to make lock');
@@ -65,7 +65,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
 
         /** @var non-empty-string $resource */
         $resource = (string)$key;
-        $status = $this->lock->lockRead($resource, $lockId, $this->initialTtl);
+        $status = $this->lock->lockRead($resource, $lockId, $this->initialTtl, $this->initialWaitTtl);
 
         if (false === $status) {
             throw new LockConflictedException('RoadRunner. Failed to make read lock');
