@@ -31,8 +31,12 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         \assert($this->initialWaitTtl >= 0);
     }
 
-    public function withTtl(float $ttl, float $waitTtl = 0): self
+    /**
+     * Clone current instance with another values of ttl.
+     */
+    public function withTtl(float $ttl, ?float $waitTtl = null): self
     {
+        $waitTtl ??= $this->initialWaitTtl;
         return new self($this->lock, $this->tokens, $ttl, $waitTtl);
     }
 
