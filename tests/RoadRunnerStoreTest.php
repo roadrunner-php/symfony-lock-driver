@@ -166,7 +166,7 @@ final class RoadRunnerStoreTest extends TestCase
     {
         $this->rrLock->expects($this->once())
             ->method('lock')
-            ->with('resource-name', 'random-id', 300, 60)
+            ->with('resource-name', 'random-id', 300, 0)
             ->willReturn('lock-id');
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
@@ -184,10 +184,51 @@ final class RoadRunnerStoreTest extends TestCase
 
         $this->rrLock->expects($this->once())
             ->method('lock')
-            ->with('resource-name', 'random-id', 300, 60)
+            ->with('resource-name', 'random-id', 300, 0)
             ->willReturn(false);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $store->waitAndSave(new Key('resource-name'));
+    }
+
+    /**
+     * @dataProvider dataWithTtl
+     */
+    public function testWithTtl(float $ttl, ?float $waitTtl, float $ttlExp, float $waitTtlExp): void
+    {
+        $this->rrLock->expects($this->once())
+            ->method('lock')
+            ->with('resource-name', 'random-id', $ttlExp, $waitTtlExp)
+            ->willReturn('lock-id');
+
+        $s = new RoadRunnerStore($this->rrLock, $this->tokens);
+        $s->withTtl($ttl, $waitTtl)->save(new Key('resource-name'));
+    }
+
+    /**
+     * @return iterable
+     */
+    public static function dataWithTtl(): iterable
+    {
+        yield [
+            100,
+            null,
+            100,
+            0,
+        ];
+
+        yield [
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+        ];
+
+        yield [
+            0,
+            0,
+            0,
+            0,
+        ];
     }
 }

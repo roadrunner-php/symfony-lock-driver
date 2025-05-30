@@ -14,6 +14,7 @@ final class RandomTokenGenerator implements TokenGeneratorInterface
     ) {
     }
 
+    #[\Override]
     public function generate(): string
     {
         return \bin2hex(\random_bytes($this->length));

@@ -25,17 +25,24 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         private readonly RR\LockInterface $lock,
         private readonly TokenGeneratorInterface $tokens = new RandomTokenGenerator(),
         private readonly float $initialTtl = 300.0,
-        private readonly float $initialWaitTtl = 60,
+        private readonly float $initialWaitTtl = 0,
     ) {
         \assert($this->initialTtl >= 0);
         \assert($this->initialWaitTtl >= 0);
     }
 
-    public function withTtl(float $ttl): self
+    /**
+     * Clone current instance with another values of ttl.
+     * @param float $ttl The time-to-live of the lock, in seconds. Defaults to 0 (forever).
+     * @param float $waitTtl How long to wait to acquire lock until returning false, in seconds.
+     */
+    public function withTtl(float $ttl, ?float $waitTtl = null): self
     {
-        return new self($this->lock, $this->tokens, $ttl, $this->initialWaitTtl);
+        $waitTtl ??= $this->initialWaitTtl;
+        return new self($this->lock, $this->tokens, $ttl, $waitTtl);
     }
 
+    #[\Override]
     public function save(Key $key): void
     {
         \assert(false === $key->hasState(__CLASS__));
@@ -46,7 +53,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
             /** @var non-empty-string $resource */
             $resource = (string)$key;
 
-            $status = $this->lock->lock($resource, $lockId, $this->initialTtl);
+            $status = $this->lock->lock($resource, $lockId, $this->initialTtl, $this->initialWaitTtl);
 
             if (false === $status) {
                 throw new LockConflictedException('RoadRunner. Failed to make lock');
@@ -58,6 +65,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         }
     }
 
+    #[\Override]
     public function saveRead(Key $key): void
     {
         \assert(false === $key->hasState(__CLASS__));
@@ -65,7 +73,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
 
         /** @var non-empty-string $resource */
         $resource = (string)$key;
-        $status = $this->lock->lockRead($resource, $lockId, $this->initialTtl);
+        $status = $this->lock->lockRead($resource, $lockId, $this->initialTtl, $this->initialWaitTtl);
 
         if (false === $status) {
             throw new LockConflictedException('RoadRunner. Failed to make read lock');
@@ -74,6 +82,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         $key->setState(__CLASS__, $lockId);
     }
 
+    #[\Override]
     public function exists(Key $key): bool
     {
         \assert($key->hasState(__CLASS__));
@@ -86,6 +95,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         return $this->lock->exists($resource, $lockId);
     }
 
+    #[\Override]
     public function putOffExpiration(Key $key, float $ttl): void
     {
         \assert($key->hasState(__CLASS__));
@@ -101,6 +111,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         }
     }
 
+    #[\Override]
     public function delete(Key $key): void
     {
         \assert($key->hasState(__CLASS__));
@@ -111,6 +122,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         $this->lock->release($resource, $lockId);
     }
 
+    #[\Override]
     public function waitAndSave(Key $key): void
     {
         $lockId = $this->getUniqueToken($key);
