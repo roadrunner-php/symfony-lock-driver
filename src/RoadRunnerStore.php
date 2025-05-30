@@ -33,6 +33,8 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
 
     /**
      * Clone current instance with another values of ttl.
+     * @param float $ttl The time-to-live of the lock, in seconds. Defaults to 0 (forever).
+     * @param float $waitTtl How long to wait to acquire lock until returning false, in seconds.
      */
     public function withTtl(float $ttl, ?float $waitTtl = null): self
     {
