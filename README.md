@@ -52,6 +52,20 @@ $factory = new LockFactory(
 );
 ```
 
+### Store options
+
+`RoadRunnerStore` accepts two timing options:
+
+| Option           | Default       | Description |
+|------------------|---------------|-------------|
+| `$initialTtl`    | `300.0`       | Default lock time-to-live, in seconds. When it elapses the lock is released automatically; `0` means it never expires on its own. |
+| `$initialWaitTtl`| `0`           | Default time to wait for the lock to become free, in seconds. `0` is effectively **non-blocking**: the RoadRunner server caps a `0` wait at `1ms`, so acquiring an already-held lock fails almost immediately. A positive value blocks for up to that duration. |
+
+```php
+// Wait up to 5 seconds for the lock, and hold it for at most 30 seconds.
+$store = (new RoadRunnerStore($lock))->withTtl(ttl: 30.0, waitTtl: 5.0);
+```
+
 Read more about using Symfony Lock component [here](https://symfony.com/doc/current/components/lock.html).
 
 ## Contributing
