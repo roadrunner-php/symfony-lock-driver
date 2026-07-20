@@ -18,8 +18,12 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     use ExpiringStoreTrait;
 
     /**
-     * @param float $initialTtl The time-to-live of the lock, in seconds. Defaults to 0 (forever).
-     * @param float $initialWaitTtl How long to wait to acquire lock until returning false.
+     * @param float $initialTtl Default lock time-to-live, in seconds. Defaults to 300. When it elapses the lock is
+     *                          released automatically; 0 means the lock never expires on its own.
+     * @param float $initialWaitTtl Default time to wait for the lock to become free before giving up, in seconds.
+     *                              Defaults to 0, which is effectively non-blocking: the RoadRunner server caps a 0
+     *                              wait at 1ms, so acquiring an already-held lock fails (throws LockConflictedException)
+     *                              almost immediately. A positive value blocks for up to that duration.
      */
     public function __construct(
         private readonly RR\LockInterface $lock,
@@ -32,9 +36,11 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     }
 
     /**
-     * Clone current instance with another values of ttl.
-     * @param float $ttl The time-to-live of the lock, in seconds. Defaults to 0 (forever).
-     * @param float $waitTtl How long to wait to acquire lock until returning false, in seconds.
+     * Clone the current instance with different ttl / waitTtl values.
+     *
+     * @param float $ttl Lock time-to-live, in seconds. 0 means the lock never expires on its own.
+     * @param float|null $waitTtl Time to wait for the lock to become free, in seconds. Null keeps the current
+     *                            instance's waitTtl. See the constructor for the meaning of 0 (non-blocking).
      */
     public function withTtl(float $ttl, ?float $waitTtl = null): self
     {
