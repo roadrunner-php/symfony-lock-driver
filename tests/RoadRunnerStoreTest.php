@@ -184,6 +184,26 @@ final class RoadRunnerStoreTest
         $s->withTtl($ttl, $waitTtl)->save(new Key('resource-name'));
     }
 
+    public function testSaveRetryAfterConflictReusesToken(): void
+    {
+        $this->rrLock->shouldReceive('lock')->twice()->with('resource-name', 'random-id', \Mockery::andAnyOtherArgs())
+            ->andReturn(false, 'lock-id');
+        $tokens = \Mockery::mock(TokenGeneratorInterface::class);
+        $tokens->shouldReceive('generate')->once()->andReturn('random-id');
+
+        $store = new RoadRunnerStore($this->rrLock, $tokens);
+        $key = new Key('resource-name');
+
+        try {
+            $store->save($key);
+            Assert::fail('The first attempt must conflict.');
+        } catch (LockConflictedException) {
+        }
+        $store->save($key);
+
+        Assert::same($key->getState(RoadRunnerStore::class), 'random-id');
+    }
+
     public function testWithTtlKeepsWaitTtlOfCurrentInstance(): void
     {
         $this->rrLock->shouldReceive('lock')->once()->with('resource-name', 'random-id', 10.0, 5.0)->andReturn('lock-id');
