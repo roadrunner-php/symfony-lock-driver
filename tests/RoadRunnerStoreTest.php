@@ -13,7 +13,10 @@ use Testo\Lifecycle\BeforeTest;
 use RoadRunner\Lock\LockInterface as RrLock;
 use Spiral\RoadRunner\Symfony\Lock\RoadRunnerStore;
 use Spiral\RoadRunner\Symfony\Lock\TokenGeneratorInterface;
+use Spiral\Goridge\RPC\Exception\RPCException;
+use Symfony\Component\Lock\Exception\LockAcquiringException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
+use Symfony\Component\Lock\Exception\LockExpiredException;
 use Symfony\Component\Lock\Key;
 
 #[Test]
@@ -179,6 +182,90 @@ final class RoadRunnerStoreTest
 
         $s = new RoadRunnerStore($this->rrLock, $this->tokens);
         $s->withTtl($ttl, $waitTtl)->save(new Key('resource-name'));
+    }
+
+    public function testWithTtlKeepsWaitTtlOfCurrentInstance(): void
+    {
+        $this->rrLock->shouldReceive('lock')->once()->with('resource-name', 'random-id', 10.0, 5.0)->andReturn('lock-id');
+
+        $store = new RoadRunnerStore($this->rrLock, $this->tokens, initialWaitTtl: 5.0);
+        $store->withTtl(10.0)->save(new Key('resource-name'));
+    }
+
+    public function testWithTtlLeavesOriginalStoreUnchanged(): void
+    {
+        $this->rrLock->shouldReceive('lock')->once()->with('resource-name', 'random-id', 300.0, 0.0)->andReturn('lock-id');
+
+        $store = new RoadRunnerStore($this->rrLock, $this->tokens);
+        Assert::notSame($store->withTtl(10.0, 1.0), $store);
+
+        $store->save(new Key('resource-name'));
+    }
+
+    public function testSaveWrapsRpcError(): void
+    {
+        $rpcError = new RPCException('connection lost');
+        Expect::exception(LockAcquiringException::class)
+            ->withMessage('RoadRunner. RPC call error')
+            ->withPrevious($rpcError);
+
+        $this->rrLock->shouldReceive('lock')->once()->andThrow($rpcError);
+
+        $store = new RoadRunnerStore($this->rrLock, $this->tokens);
+        $store->save(new Key('resource-name'));
+    }
+
+    public function testSaveReadStoresToken(): void
+    {
+        $this->rrLock->shouldReceive('lockRead')->once()->andReturn('lock-id');
+
+        $store = new RoadRunnerStore($this->rrLock, $this->tokens);
+        $key = new Key('resource-name');
+        $store->saveRead($key);
+
+        Assert::same($key->getState(RoadRunnerStore::class), 'random-id');
+    }
+
+    public function testOperationsOnAcquiredKeyUseItsToken(): void
+    {
+        $this->rrLock->shouldReceive('exists')->once()->with('resource-name', 'lock-id')->andReturn(true);
+        $this->rrLock->shouldReceive('updateTTL')->once()->with('resource-name', 'lock-id', 60.0)->andReturn(true);
+        $this->rrLock->shouldReceive('release')->once()->with('resource-name', 'lock-id')->andReturn(true);
+        $this->tokens->shouldNotReceive('generate');
+
+        $store = new RoadRunnerStore($this->rrLock, $this->tokens);
+        $key = new Key('resource-name');
+        $key->setState(RoadRunnerStore::class, 'lock-id');
+
+        Assert::true($store->exists($key));
+        $store->putOffExpiration($key, 60.0);
+        $store->delete($key);
+    }
+
+    public function testWaitAndSaveReleasesExpiredKey(): void
+    {
+        Expect::exception(LockExpiredException::class);
+
+        $this->rrLock->shouldReceive('lock')->once()->andReturn('lock-id');
+        $this->rrLock->shouldReceive('release')->once()->with('resource-name', 'random-id')->andReturn(true);
+
+        $store = new RoadRunnerStore($this->rrLock, $this->tokens);
+        $key = new Key('resource-name');
+        $key->reduceLifetime(-1);
+        $store->waitAndSave($key);
+    }
+
+    public function testDefaultTokenGeneratorProducesRandomToken(): void
+    {
+        $this->rrLock->shouldReceive('lock')->once()->andReturn('lock-id');
+
+        $store = new RoadRunnerStore($this->rrLock);
+        $key = new Key('resource-name');
+        $store->save($key);
+
+        $token = $key->getState(RoadRunnerStore::class);
+        Assert::same(\strlen($token), 64);
+        Assert::true(\ctype_xdigit($token));
     }
 
     #[BeforeTest]
