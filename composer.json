@@ -28,14 +28,17 @@
         "chat": "https://discord.gg/V6EK4he"
     },
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.2",
         "roadrunner-php/lock": "^1.1",
         "symfony/lock": "^6.0 || ^7.0 || ^8.0",
         "symfony/polyfill-php83": "^1.32"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0",
-        "vimeo/psalm": "^5.9 || ^6.0"
+        "mockery/mockery": "^1.6",
+        "spiral/code-style": "^2.3.1",
+        "testo/bridge-mockery": "^0.1.2",
+        "testo/testo": "^0.10.55",
+        "vimeo/psalm": "^6 || ^7"
     },
     "autoload": {
         "psr-4": {
@@ -54,10 +57,18 @@
         }
     ],
     "scripts": {
-        "analyze": "psalm"
+        "analyze": "psalm",
+        "cs:diff": "php-cs-fixer fix --dry-run -v --diff",
+        "cs:fix": "php-cs-fixer fix -v",
+        "test": "testo"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "audit": {
+            "ignore": {
+                "GHSA-g9pc-8g42-g6vq": "False positive: the range < 2025.1.0 also matches RoadRunner 3.x, which is not affected"
+            }
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

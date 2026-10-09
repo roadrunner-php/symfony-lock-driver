@@ -51,17 +51,15 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function save(Key $key): void
     {
-        \assert(false === $key->hasState(__CLASS__));
-
         try {
             $lockId = $this->getUniqueToken($key);
 
             /** @var non-empty-string $resource */
-            $resource = (string)$key;
+            $resource = (string) $key;
 
             $status = $this->lock->lock($resource, $lockId, $this->initialTtl, $this->initialWaitTtl);
 
-            if (false === $status) {
+            if ($status === false) {
                 throw new LockConflictedException('RoadRunner. Failed to make lock');
             }
 
@@ -74,14 +72,13 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function saveRead(Key $key): void
     {
-        \assert(false === $key->hasState(__CLASS__));
         $lockId = $this->getUniqueToken($key);
 
         /** @var non-empty-string $resource */
-        $resource = (string)$key;
+        $resource = (string) $key;
         $status = $this->lock->lockRead($resource, $lockId, $this->initialTtl, $this->initialWaitTtl);
 
-        if (false === $status) {
+        if ($status === false) {
             throw new LockConflictedException('RoadRunner. Failed to make read lock');
         }
 
@@ -91,12 +88,10 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function exists(Key $key): bool
     {
-        \assert($key->hasState(__CLASS__));
-
         $lockId = $this->getUniqueToken($key);
 
         /** @var non-empty-string $resource */
-        $resource = (string)$key;
+        $resource = (string) $key;
 
         return $this->lock->exists($resource, $lockId);
     }
@@ -104,15 +99,14 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function putOffExpiration(Key $key, float $ttl): void
     {
-        \assert($key->hasState(__CLASS__));
         \assert($ttl > 0);
 
         $lockId = $this->getUniqueToken($key);
 
         /** @var non-empty-string $resource */
-        $resource = (string)$key;
+        $resource = (string) $key;
 
-        if (false === $this->lock->updateTTL($resource, $lockId, $ttl)) {
+        if ($this->lock->updateTTL($resource, $lockId, $ttl) === false) {
             throw new LockConflictedException('RoadRunner. Failed to update lock ttl');
         }
     }
@@ -120,11 +114,10 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function delete(Key $key): void
     {
-        \assert($key->hasState(__CLASS__));
         $lockId = $this->getUniqueToken($key);
 
         /** @var non-empty-string $resource */
-        $resource = (string)$key;
+        $resource = (string) $key;
         $this->lock->release($resource, $lockId);
     }
 
@@ -134,7 +127,7 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
         $lockId = $this->getUniqueToken($key);
 
         /** @var non-empty-string $resource */
-        $resource = (string)$key;
+        $resource = (string) $key;
 
         $status = $this->lock->lock($resource, $lockId, $this->initialTtl, $this->initialWaitTtl);
 
