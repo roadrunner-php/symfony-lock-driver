@@ -11,8 +11,7 @@ final class RandomTokenGenerator implements TokenGeneratorInterface
      */
     public function __construct(
         private readonly int $length = 32,
-    ) {
-    }
+    ) {}
 
     #[\Override]
     public function generate(): string

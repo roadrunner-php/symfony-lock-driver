@@ -17,7 +17,7 @@ final class IntegrationTest extends TestCase
             'test-lock' => [
                 'uuid1',
                 false,
-                'uuid2'
+                'uuid2',
             ],
         ];
         $rrLock = $this->createMock(RR\LockInterface::class);
