@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Spiral\RoadRunner\Symfony\Lock\Tests;
 
-use PHPUnit\Framework\TestCase;
+use Testo\Test;
+use Testo\Assert;
 use RoadRunner\Lock as RR;
 use Spiral\RoadRunner\Symfony\Lock\RoadRunnerStore;
 use Symfony\Component\Lock\LockFactory;
 
-final class IntegrationTest extends TestCase
+#[Test]
+final class IntegrationTest
 {
     public function testLock(): void
     {
@@ -20,36 +22,27 @@ final class IntegrationTest extends TestCase
                 'uuid2',
             ],
         ];
-        $rrLock = $this->createMock(RR\LockInterface::class);
-        $rrLock
-            ->expects(self::exactly(3))
-            ->method('lock')
-            ->willReturnCallback(function (string $name) use (&$responseList) {
-                $array_shift = \array_shift($responseList[$name]);
-                return $array_shift;
-            });
-        $rrLock
-            ->expects(self::exactly(2))
-            ->method('updateTTL')
-            ->willReturn(true);
+        $rrLock = \Mockery::mock(RR\LockInterface::class)->shouldIgnoreMissing();
+        $rrLock->shouldReceive('lock')->times(3)->andReturnUsing(function (string $name) use (&$responseList) {
+            $array_shift = \array_shift($responseList[$name]);
+            return $array_shift;
+        });
+        $rrLock->shouldReceive('updateTTL')->times(2)->andReturn(true);
 
-        $rrLock
-            ->expects(self::exactly(2))
-            ->method('release')
-            ->willReturn(true);
+        $rrLock->shouldReceive('release')->times(2)->andReturn(true);
 
         // lock
         $factory = new LockFactory(new RoadRunnerStore($rrLock));
         $lock1 = $factory->createLock('test-lock');
-        self::assertTrue($lock1->acquire());
+        Assert::true($lock1->acquire());
 
         $lock2 = $factory->createLock('test-lock');
-        self::assertFalse($lock2->acquire());
+        Assert::false($lock2->acquire());
 
         $lock1->release();
 
         // lock 2
-        self::assertTrue($lock2->acquire());
+        Assert::true($lock2->acquire());
         $lock2->release();
     }
 }
