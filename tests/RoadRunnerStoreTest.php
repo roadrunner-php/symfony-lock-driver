@@ -15,15 +15,28 @@ final class RoadRunnerStoreTest extends TestCase
 {
     private RrLock|\PHPUnit\Framework\MockObject\MockObject $rrLock;
 
-    protected function setUp(): void
+    public static function dataWithTtl(): iterable
     {
-        parent::setUp();
+        yield [
+            100,
+            null,
+            100,
+            0,
+        ];
 
-        $this->rrLock = $this->createMock(RrLock::class);
-        $this->tokens = $this->createMock(TokenGeneratorInterface::class);
+        yield [
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+        ];
 
-        $this->tokens->method('generate')
-            ->willReturn('random-id');
+        yield [
+            0,
+            0,
+            0,
+            0,
+        ];
     }
 
     public function testSaveSuccess(): void
@@ -205,30 +218,14 @@ final class RoadRunnerStoreTest extends TestCase
         $s->withTtl($ttl, $waitTtl)->save(new Key('resource-name'));
     }
 
-    /**
-     * @return iterable
-     */
-    public static function dataWithTtl(): iterable
+    protected function setUp(): void
     {
-        yield [
-            100,
-            null,
-            100,
-            0,
-        ];
+        parent::setUp();
 
-        yield [
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-        ];
+        $this->rrLock = $this->createMock(RrLock::class);
+        $this->tokens = $this->createMock(TokenGeneratorInterface::class);
 
-        yield [
-            0,
-            0,
-            0,
-            0,
-        ];
+        $this->tokens->method('generate')
+            ->willReturn('random-id');
     }
 }
