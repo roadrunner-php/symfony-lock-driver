@@ -15,6 +15,7 @@
 [![Psalm Level](https://shepherd.dev/github/roadrunner-php/symfony-lock-driver/level.svg)](https://shepherd.dev/github/roadrunner-php/symfony-lock-driver)
 [![Type Coverage](https://shepherd.dev/github/roadrunner-php/symfony-lock-driver/coverage.svg)](https://shepherd.dev/github/roadrunner-php/symfony-lock-driver)
 [![codecov](https://codecov.io/gh/roadrunner-php/symfony-lock-driver/branch/1.x/graph/badge.svg)](https://codecov.io/gh/roadrunner-php/symfony-lock-driver)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Froadrunner-php%2Fsymfony-lock-driver%2F1.x)](https://dashboard.stryker-mutator.io/reports/github.com/roadrunner-php/symfony-lock-driver/1.x)
 
 </div>
 
