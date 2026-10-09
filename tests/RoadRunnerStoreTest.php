@@ -4,16 +4,23 @@ declare(strict_types=1);
 
 namespace Spiral\RoadRunner\Symfony\Lock\Tests;
 
-use PHPUnit\Framework\TestCase;
+use Mockery\MockInterface;
+use Testo\Test;
+use Testo\Assert;
+use Testo\Expect;
+use Testo\Data\DataProvider;
+use Testo\Lifecycle\BeforeTest;
 use RoadRunner\Lock\LockInterface as RrLock;
 use Spiral\RoadRunner\Symfony\Lock\RoadRunnerStore;
 use Spiral\RoadRunner\Symfony\Lock\TokenGeneratorInterface;
 use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Key;
 
-final class RoadRunnerStoreTest extends TestCase
+#[Test]
+final class RoadRunnerStoreTest
 {
-    private RrLock|\PHPUnit\Framework\MockObject\MockObject $rrLock;
+    private RrLock&MockInterface $rrLock;
+    private TokenGeneratorInterface&MockInterface $tokens;
 
     public static function dataWithTtl(): iterable
     {
@@ -41,25 +48,19 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testSaveSuccess(): void
     {
-        $this->rrLock->expects(self::once())
-            ->method('lock')
-            ->with('resource-name', 'random-id')
-            ->willReturn('lock-id');
+        $this->rrLock->shouldReceive('lock')->once()->with('resource-name', 'random-id', \Mockery::andAnyOtherArgs())->andReturn('lock-id');
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
         $store->save($key);
 
-        $this->assertTrue($key->hasState(RoadRunnerStore::class));
-        $this->assertSame('random-id', $key->getState(RoadRunnerStore::class));
+        Assert::true($key->hasState(RoadRunnerStore::class));
+        Assert::same($key->getState(RoadRunnerStore::class), 'random-id');
     }
 
     public function testSaveReadSuccess(): void
     {
-        $this->rrLock->expects(self::once())
-            ->method('lockRead')
-            ->with('resource-name', 'random-id')
-            ->willReturn('lock-id');
+        $this->rrLock->shouldReceive('lockRead')->once()->with('resource-name', 'random-id', \Mockery::andAnyOtherArgs())->andReturn('lock-id');
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
@@ -68,10 +69,7 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testExistsSuccess(): void
     {
-        $this->rrLock->expects(self::once())
-            ->method('exists')
-            ->with('resource-name')
-            ->willReturn(true);
+        $this->rrLock->shouldReceive('exists')->once()->with('resource-name', \Mockery::andAnyOtherArgs())->andReturn(true);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
@@ -81,10 +79,7 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testPutOffExpirationSuccess(): void
     {
-        $this->rrLock->expects(self::once())
-            ->method('updateTTL')
-            ->with('resource-name', 'lock-id', 3600.0)
-            ->willReturn(true);
+        $this->rrLock->shouldReceive('updateTTL')->once()->with('resource-name', 'lock-id', 3600.0, \Mockery::andAnyOtherArgs())->andReturn(true);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
@@ -94,10 +89,7 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testDeleteSuccess(): void
     {
-        $this->rrLock->expects(self::once())
-            ->method('release')
-            ->with('resource-name')
-            ->willReturn(true);
+        $this->rrLock->shouldReceive('release')->once()->with('resource-name', \Mockery::andAnyOtherArgs())->andReturn(true);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
@@ -107,13 +99,9 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testSaveFail(): void
     {
-        $this->expectException(LockConflictedException::class);
-        $this->expectExceptionMessage('RoadRunner. Failed to make lock');
+        Expect::exception(LockConflictedException::class)->withMessageContaining('RoadRunner. Failed to make lock');
 
-        $this->rrLock->expects(self::once())
-            ->method('lock')
-            ->with('resource-name', 'random-id')
-            ->willReturn(false);
+        $this->rrLock->shouldReceive('lock')->once()->with('resource-name', 'random-id', \Mockery::andAnyOtherArgs())->andReturn(false);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $store->save(new Key('resource-name'));
@@ -121,12 +109,9 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testSaveReadFail(): void
     {
-        $this->expectException(LockConflictedException::class);
-        $this->expectExceptionMessage('RoadRunner. Failed to make read lock');
+        Expect::exception(LockConflictedException::class)->withMessageContaining('RoadRunner. Failed to make read lock');
 
-        $this->rrLock->expects(self::once())
-            ->method('lockRead')
-            ->with('resource-name', 'random-id');
+        $this->rrLock->shouldReceive('lockRead')->once()->with('resource-name', 'random-id', \Mockery::andAnyOtherArgs())->andReturn(false);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
@@ -135,26 +120,19 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testExistsFail(): void
     {
-        $this->rrLock->expects(self::once())
-            ->method('exists')
-            ->with('resource-name')
-            ->willReturn(false);
+        $this->rrLock->shouldReceive('exists')->once()->with('resource-name', \Mockery::andAnyOtherArgs())->andReturn(false);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
         $key->setState(RoadRunnerStore::class, 'lock-id');
-        $this->assertFalse($store->exists($key));
+        Assert::false($store->exists($key));
     }
 
     public function testPutOffExpirationFail(): void
     {
-        $this->expectException(LockConflictedException::class);
-        $this->expectExceptionMessage('RoadRunner. Failed to update lock ttl');
+        Expect::exception(LockConflictedException::class)->withMessageContaining('RoadRunner. Failed to update lock ttl');
 
-        $this->rrLock->expects(self::once())
-            ->method('updateTTL')
-            ->with('resource-name', 'lock-id', 3600.0)
-            ->willReturn(false);
+        $this->rrLock->shouldReceive('updateTTL')->once()->with('resource-name', 'lock-id', 3600.0, \Mockery::andAnyOtherArgs())->andReturn(false);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
@@ -164,10 +142,7 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testDeleteFail(): void
     {
-        $this->rrLock->expects(self::once())
-            ->method('release')
-            ->with('resource-name')
-            ->willReturn(false);
+        $this->rrLock->shouldReceive('release')->once()->with('resource-name', \Mockery::andAnyOtherArgs())->andReturn(false);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
@@ -177,55 +152,41 @@ final class RoadRunnerStoreTest extends TestCase
 
     public function testWaitAndSaveSuccess(): void
     {
-        $this->rrLock->expects($this->once())
-            ->method('lock')
-            ->with('resource-name', 'random-id', 300, 0)
-            ->willReturn('lock-id');
+        $this->rrLock->shouldReceive('lock')->once()->with('resource-name', 'random-id', 300, 0, \Mockery::andAnyOtherArgs())->andReturn('lock-id');
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $key = new Key('resource-name');
         $store->waitAndSave($key);
 
-        $this->assertTrue($key->hasState(RoadRunnerStore::class));
-        $this->assertSame('random-id', $key->getState(RoadRunnerStore::class));
+        Assert::true($key->hasState(RoadRunnerStore::class));
+        Assert::same($key->getState(RoadRunnerStore::class), 'random-id');
     }
 
     public function testWaitAndSaveFail(): void
     {
-        $this->expectException(LockConflictedException::class);
-        $this->expectExceptionMessage('RoadRunner. Failed to make lock');
+        Expect::exception(LockConflictedException::class)->withMessageContaining('RoadRunner. Failed to make lock');
 
-        $this->rrLock->expects($this->once())
-            ->method('lock')
-            ->with('resource-name', 'random-id', 300, 0)
-            ->willReturn(false);
+        $this->rrLock->shouldReceive('lock')->once()->with('resource-name', 'random-id', 300, 0, \Mockery::andAnyOtherArgs())->andReturn(false);
 
         $store = new RoadRunnerStore($this->rrLock, $this->tokens);
         $store->waitAndSave(new Key('resource-name'));
     }
 
-    /**
-     * @dataProvider dataWithTtl
-     */
+    #[DataProvider('dataWithTtl')]
     public function testWithTtl(float $ttl, ?float $waitTtl, float $ttlExp, float $waitTtlExp): void
     {
-        $this->rrLock->expects($this->once())
-            ->method('lock')
-            ->with('resource-name', 'random-id', $ttlExp, $waitTtlExp)
-            ->willReturn('lock-id');
+        $this->rrLock->shouldReceive('lock')->once()->with('resource-name', 'random-id', $ttlExp, $waitTtlExp, \Mockery::andAnyOtherArgs())->andReturn('lock-id');
 
         $s = new RoadRunnerStore($this->rrLock, $this->tokens);
         $s->withTtl($ttl, $waitTtl)->save(new Key('resource-name'));
     }
 
+    #[BeforeTest]
     protected function setUp(): void
     {
-        parent::setUp();
+        $this->rrLock = \Mockery::mock(RrLock::class)->shouldIgnoreMissing();
+        $this->tokens = \Mockery::mock(TokenGeneratorInterface::class)->shouldIgnoreMissing();
 
-        $this->rrLock = $this->createMock(RrLock::class);
-        $this->tokens = $this->createMock(TokenGeneratorInterface::class);
-
-        $this->tokens->method('generate')
-            ->willReturn('random-id');
+        $this->tokens->shouldReceive('generate')->andReturn('random-id');
     }
 }
