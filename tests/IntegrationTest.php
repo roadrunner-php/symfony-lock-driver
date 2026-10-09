@@ -45,4 +45,32 @@ final class IntegrationTest
         Assert::true($lock2->acquire());
         $lock2->release();
     }
+
+    public function testLockCanBeAcquiredAgainAfterRelease(): void
+    {
+        $rrLock = \Mockery::mock(RR\LockInterface::class);
+        $rrLock->shouldReceive('lock')->twice()->andReturn('lock-id');
+        $rrLock->shouldReceive('updateTTL')->twice()->andReturn(true);
+        $rrLock->shouldReceive('release')->twice()->andReturn(true);
+        $rrLock->shouldReceive('exists')->andReturn(false);
+
+        $lock = (new LockFactory(new RoadRunnerStore($rrLock)))->createLock('test-lock', autoRelease: false);
+
+        Assert::true($lock->acquire());
+        $lock->release();
+        Assert::true($lock->acquire());
+        $lock->release();
+    }
+
+    public function testLockThatWasNeverAcquired(): void
+    {
+        $rrLock = \Mockery::mock(RR\LockInterface::class);
+        $rrLock->shouldReceive('exists')->andReturn(false);
+        $rrLock->shouldReceive('release')->once()->andReturn(false);
+
+        $lock = (new LockFactory(new RoadRunnerStore($rrLock)))->createLock('test-lock', autoRelease: false);
+
+        Assert::false($lock->isAcquired());
+        $lock->release();
+    }
 }

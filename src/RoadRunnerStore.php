@@ -51,8 +51,6 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function save(Key $key): void
     {
-        \assert($key->hasState(__CLASS__) === false);
-
         try {
             $lockId = $this->getUniqueToken($key);
 
@@ -74,7 +72,6 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function saveRead(Key $key): void
     {
-        \assert($key->hasState(__CLASS__) === false);
         $lockId = $this->getUniqueToken($key);
 
         /** @var non-empty-string $resource */
@@ -91,8 +88,6 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function exists(Key $key): bool
     {
-        \assert($key->hasState(__CLASS__));
-
         $lockId = $this->getUniqueToken($key);
 
         /** @var non-empty-string $resource */
@@ -104,7 +99,6 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function putOffExpiration(Key $key, float $ttl): void
     {
-        \assert($key->hasState(__CLASS__));
         \assert($ttl > 0);
 
         $lockId = $this->getUniqueToken($key);
@@ -120,7 +114,6 @@ final class RoadRunnerStore implements SharedLockStoreInterface, BlockingStoreIn
     #[\Override]
     public function delete(Key $key): void
     {
-        \assert($key->hasState(__CLASS__));
         $lockId = $this->getUniqueToken($key);
 
         /** @var non-empty-string $resource */
