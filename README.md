@@ -29,13 +29,13 @@ It provides a `RoadRunnerStore`, so `symfony/lock` can manage distributed locks 
 ### Installation
 
 ```bash
-composer require roadrunner-php/symfony-lock-driver
+composer require roadrunner/symfony-lock-driver
 ```
 
-[![PHP](https://img.shields.io/packagist/php-v/roadrunner-php/symfony-lock-driver.svg?style=flat-square&logo=php)](https://packagist.org/packages/roadrunner-php/symfony-lock-driver)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/roadrunner-php/symfony-lock-driver.svg?style=flat-square&logo=packagist)](https://packagist.org/packages/roadrunner-php/symfony-lock-driver)
-[![License](https://img.shields.io/packagist/l/roadrunner-php/symfony-lock-driver.svg?style=flat-square)](LICENSE)
-[![Total Downloads](https://img.shields.io/packagist/dt/roadrunner-php/symfony-lock-driver.svg?style=flat-square)](https://packagist.org/packages/roadrunner-php/symfony-lock-driver/stats)
+[![PHP](https://img.shields.io/packagist/php-v/roadrunner/symfony-lock-driver.svg?style=flat-square&logo=php)](https://packagist.org/packages/roadrunner/symfony-lock-driver)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/roadrunner/symfony-lock-driver.svg?style=flat-square&logo=packagist)](https://packagist.org/packages/roadrunner/symfony-lock-driver)
+[![License](https://img.shields.io/packagist/l/roadrunner/symfony-lock-driver.svg?style=flat-square)](LICENSE)
+[![Total Downloads](https://img.shields.io/packagist/dt/roadrunner/symfony-lock-driver.svg?style=flat-square)](https://packagist.org/packages/roadrunner/symfony-lock-driver/stats)
 
 ### Configuration
 
