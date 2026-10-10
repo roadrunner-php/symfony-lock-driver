@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Spiral\RoadRunner\Symfony\Lock\Tests;
 
 use Mockery\MockInterface;
-use Testo\Test;
-use Testo\Assert;
-use Testo\Expect;
-use Testo\Data\DataProvider;
-use Testo\Lifecycle\BeforeTest;
 use RoadRunner\Lock\LockInterface as RrLock;
+use Spiral\Goridge\RPC\Exception\RPCException;
 use Spiral\RoadRunner\Symfony\Lock\RoadRunnerStore;
 use Spiral\RoadRunner\Symfony\Lock\TokenGeneratorInterface;
-use Spiral\Goridge\RPC\Exception\RPCException;
 use Symfony\Component\Lock\Exception\LockAcquiringException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Exception\LockExpiredException;
 use Symfony\Component\Lock\Key;
+use Testo\Assert;
+use Testo\Data\DataProvider;
+use Testo\Expect;
+use Testo\Lifecycle\BeforeTest;
+use Testo\Test;
 
 #[Test]
 final class RoadRunnerStoreTest

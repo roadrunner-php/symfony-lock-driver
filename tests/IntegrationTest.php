@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Spiral\RoadRunner\Symfony\Lock\Tests;
 
-use Testo\Test;
-use Testo\Assert;
 use RoadRunner\Lock as RR;
 use Spiral\RoadRunner\Symfony\Lock\RoadRunnerStore;
 use Symfony\Component\Lock\LockFactory;
+use Testo\Assert;
+use Testo\Test;
 
 #[Test]
 final class IntegrationTest
