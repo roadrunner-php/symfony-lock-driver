@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/roadrunner-php/symfony-lock-driver/compare/1.2.0...1.3.0) (2026-10-10)
+
+
+### Features
+
+* rename the package to roadrunner/symfony-lock-driver ([34aab28](https://github.com/roadrunner-php/symfony-lock-driver/commit/34aab28065ef35324627b9b31ea67ebd1830afb5))
+* support RoadRunner v3 ([#8](https://github.com/roadrunner-php/symfony-lock-driver/issues/8)) ([34aab28](https://github.com/roadrunner-php/symfony-lock-driver/commit/34aab28065ef35324627b9b31ea67ebd1830afb5))
+
 ## [1.2.0](https://github.com/roadrunner-php/symfony-lock-driver/compare/1.1.2...1.2.0) (2026-10-09)
 
 
