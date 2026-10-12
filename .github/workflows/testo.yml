@@ -16,3 +16,6 @@ jobs:
       os: >-
         ['ubuntu-latest']
       ini-values: memory_limit=-1, zend.assertions=1
+      codecov: true
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
